@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 
 namespace OP_Lab_10
 {
     class Figure
     {
         public static char[] types = { 'O', 'I', 'S', 'Z', 'L', 'J', 'T' };
-        public char type = types[1];
+        public char type;
         public static char futureType;
-        public int speed = 3;
+        public int speed = 4;
         public int[,] pointAndCoordinates = new int[4, 2]; // [point, row and column], pointAndCoordinates[0] - base
         public int[,] pointAndCoordinatesNotVerified = new int[4, 2];
         public void InitFigure()
@@ -96,32 +93,28 @@ namespace OP_Lab_10
             }
         }
 
-        public void AssignFigureToTheField()
-        {
+        public void DrawOrClearFigure(String drawOrClear) {
             for (int i = 0; i < pointAndCoordinates.GetLength(0); i++)
             {
-                try
+                for (int j = 0; j < pointAndCoordinates.GetLength(1); j++)
                 {
-                    if (GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]] == GameField.space)
+                    try
                     {
-                        GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]] = GameField.figure;
+                        Game.SetCursorModified(pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]);
+                        if (Console.CursorTop != 0)
+                        {
+                            if (drawOrClear.Equals("draw"))
+                            {
+                                GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]] = GameField.figure;
+                            } else if (drawOrClear.Equals("clear"))
+                            {
+                                GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]] = GameField.space;
+                            }
+                            Console.Write(GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]]);
+                        }
                     }
+                    catch (Exception ignore) {}
                 }
-                catch (Exception) { }
-            }
-        }
-
-        public void AddPermanentDots()
-        {
-            for (int i = 0; i < pointAndCoordinates.GetLength(0); i++)
-            {
-                int[] temp = new int[pointAndCoordinates.GetLength(1)];
-                for (int n = 0; n < temp.Length; n++)
-                {
-                    temp[n] = pointAndCoordinates[i, n];
-                }
-
-                GameField.permanentDots.Add(temp);
             }
         }
         public bool IsCollisions()
@@ -131,19 +124,19 @@ namespace OP_Lab_10
                 if (pointAndCoordinatesNotVerified[i, 1] == GameField.field.GetLength(1)-1 || pointAndCoordinatesNotVerified[i, 1] == 0 || pointAndCoordinatesNotVerified[i, 0] == GameField.field.GetLength(0) - 1) {
                     return true;
                 }
-                for (int j = 0; j < GameField.permanentDots.Count; j++)
+                try
                 {
-                    if (pointAndCoordinatesNotVerified[i, 1] == GameField.permanentDots[j][1] && pointAndCoordinatesNotVerified[i, 0] == GameField.permanentDots[j][0])
+                    if (GameField.field[pointAndCoordinatesNotVerified[i, 0], pointAndCoordinatesNotVerified[i, 1]].Equals(GameField.figure))
                     {
                         return true;
                     }
                 }
+                catch (Exception ignore) {}
             }
             return false;
         }
         public bool MoveDown()
         {
-            Thread.Sleep(500 / speed);
             pointAndCoordinatesNotVerified = (int[,])pointAndCoordinates.Clone();
             for (int i = 0; i < pointAndCoordinatesNotVerified.GetLength(0); i++)
             {
@@ -155,12 +148,10 @@ namespace OP_Lab_10
                 return true;
             } else
             {
-                AddPermanentDots();
-                GameField.ClearLine();
-                GameField.CheckLose();
                 return false;
             }
         }
+
         public void FastMoveDown()
         {
             pointAndCoordinatesNotVerified = (int[,])pointAndCoordinates.Clone();
@@ -180,6 +171,7 @@ namespace OP_Lab_10
         public void ChangePosition(ConsoleKeyInfo consoleKeyInfo)
         {
             pointAndCoordinatesNotVerified = (int[,])pointAndCoordinates.Clone();
+            DrawOrClearFigure("clear");
             switch (consoleKeyInfo.Key)
             {
                 case ConsoleKey.LeftArrow:
@@ -195,15 +187,17 @@ namespace OP_Lab_10
                     }
                     break;
                 case ConsoleKey.R:
-                    Rotate();
+                    if (type != 'O') Rotate();
                     break;
                 case ConsoleKey.DownArrow:
-                    if (speed < 10) speed *= 10;
+                    speed *= 2;
+                    if (speed > 10) speed = 10;
                     break;
                 case ConsoleKey.Spacebar:
                     FastMoveDown();
                     break;
             }
+            
             if (!IsCollisions())
                 pointAndCoordinates = (int[,]) pointAndCoordinatesNotVerified.Clone();
         }
@@ -275,6 +269,15 @@ namespace OP_Lab_10
                     pointAndCoordinatesNotVerified[i, 1] -= 2;
                 }
             }
+        }
+
+        public bool CheckLose()
+        {
+            for (int i = 0; i < pointAndCoordinates.GetLength(0); i++)
+            {
+                if (pointAndCoordinates[i, 0] == 0) return true;
+            }
+            return false;
         }
     }
 }
