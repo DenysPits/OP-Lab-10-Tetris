@@ -7,9 +7,9 @@ namespace OP_Lab_10
         public static char[] types = { 'O', 'I', 'S', 'Z', 'L', 'J', 'T' };
         public char type;
         public static char futureType;
+        public static Object lockObject = new Object();
         public int speed = 4;
         public int[,] pointAndCoordinates = new int[4, 2]; // [point, row and column], pointAndCoordinates[0] - base
-        public int[,] pointAndCoordinatesNotVerified = new int[4, 2];
         public void InitFigure()
         {
             Random random = new Random();
@@ -94,57 +94,53 @@ namespace OP_Lab_10
         }
 
         public void DrawOrClearFigure(String drawOrClear) {
-            for (int i = 0; i < pointAndCoordinates.GetLength(0); i++)
+            lock (lockObject)
             {
-                for (int j = 0; j < pointAndCoordinates.GetLength(1); j++)
+                for (int i = 0; i < pointAndCoordinates.GetLength(0); i++)
                 {
-                    try
+                    if (pointAndCoordinates[i, 0] > 0)
                     {
                         Game.SetCursorModified(pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]);
-                        if (Console.CursorTop != 0)
+                        if (drawOrClear.Equals("draw"))
                         {
-                            if (drawOrClear.Equals("draw"))
-                            {
-                                GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]] = GameField.figure;
-                            } else if (drawOrClear.Equals("clear"))
-                            {
-                                GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]] = GameField.space;
-                            }
-                            Console.Write(GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]]);
+                            GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]] = GameField.figure;
                         }
+                        else if (drawOrClear.Equals("clear"))
+                        {
+                            GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]] = GameField.space;
+                        }
+                        Console.Write(GameField.field[pointAndCoordinates[i, 0], pointAndCoordinates[i, 1]]);
                     }
-                    catch (Exception ignore) {}
-                }
+                } 
             }
         }
-        public bool IsCollisions()
+        public bool IsCollisions(int[,] pointAndCoordinatesNotСhecked)
         {
-            for (int i = 0; i < pointAndCoordinatesNotVerified.GetLength(0); i++)
+            for (int i = 0; i < pointAndCoordinatesNotСhecked.GetLength(0); i++)
             {
-                if (pointAndCoordinatesNotVerified[i, 1] == GameField.field.GetLength(1)-1 || pointAndCoordinatesNotVerified[i, 1] == 0 || pointAndCoordinatesNotVerified[i, 0] == GameField.field.GetLength(0) - 1) {
+                if (pointAndCoordinatesNotСhecked[i, 1] == GameField.field.GetLength(1)-1 || pointAndCoordinatesNotСhecked[i, 1] == 0 || pointAndCoordinatesNotСhecked[i, 0] == GameField.field.GetLength(0) - 1) {
                     return true;
                 }
-                try
+                if (pointAndCoordinatesNotСhecked[i, 0] > 0)
                 {
-                    if (GameField.field[pointAndCoordinatesNotVerified[i, 0], pointAndCoordinatesNotVerified[i, 1]].Equals(GameField.figure))
+                    if (GameField.field[pointAndCoordinatesNotСhecked[i, 0], pointAndCoordinatesNotСhecked[i, 1]].Equals(GameField.figure))
                     {
                         return true;
-                    }
+                    } 
                 }
-                catch (Exception ignore) {}
             }
             return false;
         }
         public bool MoveDown()
         {
-            pointAndCoordinatesNotVerified = (int[,])pointAndCoordinates.Clone();
-            for (int i = 0; i < pointAndCoordinatesNotVerified.GetLength(0); i++)
+            int[,] pointAndCoordinatesMoveDownNotChecked = (int[,])pointAndCoordinates.Clone();
+            for (int i = 0; i < pointAndCoordinatesMoveDownNotChecked.GetLength(0); i++)
             {
-                pointAndCoordinatesNotVerified[i, 0]++;
+                pointAndCoordinatesMoveDownNotChecked[i, 0]++;
             }
-            if (!IsCollisions())
+            if (!IsCollisions(pointAndCoordinatesMoveDownNotChecked))
             {
-                pointAndCoordinates = (int[,])pointAndCoordinatesNotVerified.Clone();
+                pointAndCoordinates = (int[,])pointAndCoordinatesMoveDownNotChecked.Clone();
                 return true;
             } else
             {
@@ -152,79 +148,78 @@ namespace OP_Lab_10
             }
         }
 
-        public void FastMoveDown()
+        public void FastMoveDown(int[,] pointAndCoordinatesControlNotChecked)
         {
-            pointAndCoordinatesNotVerified = (int[,])pointAndCoordinates.Clone();
             while (true)
             {
-                for (int i = 0; i < pointAndCoordinatesNotVerified.GetLength(0); i++)
+                for (int i = 0; i < pointAndCoordinatesControlNotChecked.GetLength(0); i++)
                 {
-                    pointAndCoordinatesNotVerified[i, 0]++;
+                    pointAndCoordinatesControlNotChecked[i, 0]++;
                 }
-                if (!IsCollisions())
+                if (!IsCollisions(pointAndCoordinatesControlNotChecked))
                 {
-                    pointAndCoordinates = (int[,])pointAndCoordinatesNotVerified.Clone();
+                    pointAndCoordinates = (int[,])pointAndCoordinatesControlNotChecked.Clone();
                 }
                 else break;
             }
         }
         public void ChangePosition(ConsoleKeyInfo consoleKeyInfo)
-        {
-            pointAndCoordinatesNotVerified = (int[,])pointAndCoordinates.Clone();
+        {   
+            int[,] pointAndCoordinatesControlNotChecked = (int[,])pointAndCoordinates.Clone();
             DrawOrClearFigure("clear");
             switch (consoleKeyInfo.Key)
             {
                 case ConsoleKey.LeftArrow:
-                    for (int i = 0; i < pointAndCoordinatesNotVerified.GetLength(0); i++)
+                    for (int i = 0; i < pointAndCoordinatesControlNotChecked.GetLength(0); i++)
                     {
-                        pointAndCoordinatesNotVerified[i, 1]--;
+                        pointAndCoordinatesControlNotChecked[i, 1]--;
                     }
                     break;
                 case ConsoleKey.RightArrow:
-                    for (int i = 0; i < pointAndCoordinatesNotVerified.GetLength(0); i++)
+                    for (int i = 0; i < pointAndCoordinatesControlNotChecked.GetLength(0); i++)
                     {
-                        pointAndCoordinatesNotVerified[i, 1]++;
+                        pointAndCoordinatesControlNotChecked[i, 1]++;
                     }
                     break;
                 case ConsoleKey.R:
-                    if (type != 'O') Rotate();
+                    if (type != 'O') Rotate(pointAndCoordinatesControlNotChecked);
                     break;
                 case ConsoleKey.DownArrow:
                     speed *= 2;
                     if (speed > 10) speed = 10;
                     break;
                 case ConsoleKey.Spacebar:
-                    FastMoveDown();
+                    FastMoveDown(pointAndCoordinatesControlNotChecked);
                     break;
             }
             
-            if (!IsCollisions())
-                pointAndCoordinates = (int[,]) pointAndCoordinatesNotVerified.Clone();
+            if (!IsCollisions(pointAndCoordinatesControlNotChecked))
+                pointAndCoordinates = (int[,])pointAndCoordinatesControlNotChecked.Clone();
         }
 
-        public void Rotate()
+        public void Rotate(int[,] pointAndCoordinatesControlNotChecked)
         {
-            for (int i = 1; i < pointAndCoordinatesNotVerified.GetLength(0); i++)
+            for (int i = 1; i < pointAndCoordinatesControlNotChecked.GetLength(0); i++)
             {
-                int rowDifference = pointAndCoordinatesNotVerified[i, 0] - pointAndCoordinatesNotVerified[0, 0];
-                int columnDifference = pointAndCoordinatesNotVerified[i, 1] - pointAndCoordinatesNotVerified[0, 1];
+                int rowDifference = pointAndCoordinatesControlNotChecked[i, 0] - pointAndCoordinatesControlNotChecked[0, 0];
+                int columnDifference = pointAndCoordinatesControlNotChecked[i, 1] - pointAndCoordinatesControlNotChecked[0, 1];
                 if (rowDifference == -2 && columnDifference == 0)
                 {
-                    pointAndCoordinatesNotVerified[i, 0] += 2;
-                    pointAndCoordinatesNotVerified[i, 1] += 2;
+                    pointAndCoordinatesControlNotChecked[i, 0] += 2;
+                    pointAndCoordinatesControlNotChecked[i, 1] += 2;
                 } else if (rowDifference == -1)
                 {
                     switch (columnDifference)
                     {
                         case -1:
-                            pointAndCoordinatesNotVerified[i, 1] += 2;
+                            pointAndCoordinatesControlNotChecked[i, 1] += 2;
                             break;
                         case 0:
-                            pointAndCoordinatesNotVerified[i, 0] += 1;
-                            pointAndCoordinatesNotVerified[i, 1] += 1;
+                            pointAndCoordinatesControlNotChecked[i, 0] += 1;
+                            pointAndCoordinatesControlNotChecked[i, 1] += 1;
                             break;
                         case 1:
-                            pointAndCoordinatesNotVerified[i, 0] += 2;
+                            pointAndCoordinatesControlNotChecked[i, 0] += 2;
                             break;
                     }
                 } else if (rowDifference == 0)
@@ -232,20 +227,20 @@ namespace OP_Lab_10
                     switch (columnDifference)
                     {
                         case -2:
-                            pointAndCoordinatesNotVerified[i, 0] -= 2;
-                            pointAndCoordinatesNotVerified[i, 1] += 2;
+                            pointAndCoordinatesControlNotChecked[i, 0] -= 2;
+                            pointAndCoordinatesControlNotChecked[i, 1] += 2;
                             break;
                         case -1:
-                            pointAndCoordinatesNotVerified[i, 0] -= 1;
-                            pointAndCoordinatesNotVerified[i, 1] += 1;
+                            pointAndCoordinatesControlNotChecked[i, 0] -= 1;
+                            pointAndCoordinatesControlNotChecked[i, 1] += 1;
                             break;
                         case 1:
-                            pointAndCoordinatesNotVerified[i, 0] += 1;
-                            pointAndCoordinatesNotVerified[i, 1] -= 1;
+                            pointAndCoordinatesControlNotChecked[i, 0] += 1;
+                            pointAndCoordinatesControlNotChecked[i, 1] -= 1;
                             break;
                         case 2:
-                            pointAndCoordinatesNotVerified[i, 0] += 2;
-                            pointAndCoordinatesNotVerified[i, 1] -= 2;
+                            pointAndCoordinatesControlNotChecked[i, 0] += 2;
+                            pointAndCoordinatesControlNotChecked[i, 1] -= 2;
                             break;
                     }
                 } else if (rowDifference == 1)
@@ -253,20 +248,20 @@ namespace OP_Lab_10
                     switch (columnDifference)
                     {
                         case -1:
-                            pointAndCoordinatesNotVerified[i, 0] -= 2;
+                            pointAndCoordinatesControlNotChecked[i, 0] -= 2;
                             break;
                         case 0:
-                            pointAndCoordinatesNotVerified[i, 0] -= 1;
-                            pointAndCoordinatesNotVerified[i, 1] -= 1;
+                            pointAndCoordinatesControlNotChecked[i, 0] -= 1;
+                            pointAndCoordinatesControlNotChecked[i, 1] -= 1;
                             break;
                         case 1:
-                            pointAndCoordinatesNotVerified[i, 1] -= 2;
+                            pointAndCoordinatesControlNotChecked[i, 1] -= 2;
                             break;
                     }
                 } else if (rowDifference == 2 && columnDifference == 0)
                 {
-                    pointAndCoordinatesNotVerified[i, 0] -= 2;
-                    pointAndCoordinatesNotVerified[i, 1] -= 2;
+                    pointAndCoordinatesControlNotChecked[i, 0] -= 2;
+                    pointAndCoordinatesControlNotChecked[i, 1] -= 2;
                 }
             }
         }

@@ -7,8 +7,8 @@ namespace OP_Lab_10
     {
         static void Main(string[] args)
         {
-            Thread thread = new Thread(Control.KeyReader);
-            thread.Start();
+            Thread reader = new Thread(Control.KeyReader);
+            reader.Start();
             Game.Play();
         }
     }
