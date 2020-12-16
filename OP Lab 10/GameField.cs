@@ -33,7 +33,6 @@ namespace OP_Lab_10
                 }
             }
         }
-
         public static void DrawEmptyField()
         {
             for (int i = 0; i < field.GetLength(0); i++)

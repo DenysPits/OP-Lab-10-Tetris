@@ -92,7 +92,6 @@ namespace OP_Lab_10
                     break;
             }
         }
-
         public void DrawOrClearFigure(String drawOrClear) {
             lock (lockObject)
             {
@@ -114,57 +113,8 @@ namespace OP_Lab_10
                 } 
             }
         }
-        public bool IsCollisions(int[,] pointAndCoordinatesNotСhecked)
-        {
-            for (int i = 0; i < pointAndCoordinatesNotСhecked.GetLength(0); i++)
-            {
-                if (pointAndCoordinatesNotСhecked[i, 1] == GameField.field.GetLength(1)-1 || pointAndCoordinatesNotСhecked[i, 1] == 0 || pointAndCoordinatesNotСhecked[i, 0] == GameField.field.GetLength(0) - 1) {
-                    return true;
-                }
-                if (pointAndCoordinatesNotСhecked[i, 0] > 0)
-                {
-                    if (GameField.field[pointAndCoordinatesNotСhecked[i, 0], pointAndCoordinatesNotСhecked[i, 1]].Equals(GameField.figure))
-                    {
-                        return true;
-                    } 
-                }
-            }
-            return false;
-        }
-        public bool MoveDown()
-        {
-            int[,] pointAndCoordinatesMoveDownNotChecked = (int[,])pointAndCoordinates.Clone();
-            for (int i = 0; i < pointAndCoordinatesMoveDownNotChecked.GetLength(0); i++)
-            {
-                pointAndCoordinatesMoveDownNotChecked[i, 0]++;
-            }
-            if (!IsCollisions(pointAndCoordinatesMoveDownNotChecked))
-            {
-                pointAndCoordinates = (int[,])pointAndCoordinatesMoveDownNotChecked.Clone();
-                return true;
-            } else
-            {
-                return false;
-            }
-        }
-
-        public void FastMoveDown(int[,] pointAndCoordinatesControlNotChecked)
-        {
-            while (true)
-            {
-                for (int i = 0; i < pointAndCoordinatesControlNotChecked.GetLength(0); i++)
-                {
-                    pointAndCoordinatesControlNotChecked[i, 0]++;
-                }
-                if (!IsCollisions(pointAndCoordinatesControlNotChecked))
-                {
-                    pointAndCoordinates = (int[,])pointAndCoordinatesControlNotChecked.Clone();
-                }
-                else break;
-            }
-        }
         public void ChangePosition(ConsoleKeyInfo consoleKeyInfo)
-        {   
+        {
             int[,] pointAndCoordinatesControlNotChecked = (int[,])pointAndCoordinates.Clone();
             DrawOrClearFigure("clear");
             switch (consoleKeyInfo.Key)
@@ -192,11 +142,25 @@ namespace OP_Lab_10
                     FastMoveDown(pointAndCoordinatesControlNotChecked);
                     break;
             }
-            
+
             if (!IsCollisions(pointAndCoordinatesControlNotChecked))
                 pointAndCoordinates = (int[,])pointAndCoordinatesControlNotChecked.Clone();
         }
-
+        public void FastMoveDown(int[,] pointAndCoordinatesControlNotChecked)
+        {
+            while (true)
+            {
+                for (int i = 0; i < pointAndCoordinatesControlNotChecked.GetLength(0); i++)
+                {
+                    pointAndCoordinatesControlNotChecked[i, 0]++;
+                }
+                if (!IsCollisions(pointAndCoordinatesControlNotChecked))
+                {
+                    pointAndCoordinates = (int[,])pointAndCoordinatesControlNotChecked.Clone();
+                }
+                else break;
+            }
+        }
         public void Rotate(int[,] pointAndCoordinatesControlNotChecked)
         {
             for (int i = 1; i < pointAndCoordinatesControlNotChecked.GetLength(0); i++)
@@ -207,7 +171,8 @@ namespace OP_Lab_10
                 {
                     pointAndCoordinatesControlNotChecked[i, 0] += 2;
                     pointAndCoordinatesControlNotChecked[i, 1] += 2;
-                } else if (rowDifference == -1)
+                }
+                else if (rowDifference == -1)
                 {
                     switch (columnDifference)
                     {
@@ -222,7 +187,8 @@ namespace OP_Lab_10
                             pointAndCoordinatesControlNotChecked[i, 0] += 2;
                             break;
                     }
-                } else if (rowDifference == 0)
+                }
+                else if (rowDifference == 0)
                 {
                     switch (columnDifference)
                     {
@@ -243,7 +209,8 @@ namespace OP_Lab_10
                             pointAndCoordinatesControlNotChecked[i, 1] -= 2;
                             break;
                     }
-                } else if (rowDifference == 1)
+                }
+                else if (rowDifference == 1)
                 {
                     switch (columnDifference)
                     {
@@ -258,14 +225,48 @@ namespace OP_Lab_10
                             pointAndCoordinatesControlNotChecked[i, 1] -= 2;
                             break;
                     }
-                } else if (rowDifference == 2 && columnDifference == 0)
+                }
+                else if (rowDifference == 2 && columnDifference == 0)
                 {
                     pointAndCoordinatesControlNotChecked[i, 0] -= 2;
                     pointAndCoordinatesControlNotChecked[i, 1] -= 2;
                 }
             }
         }
-
+        public bool MoveDown()
+        {
+            int[,] pointAndCoordinatesMoveDownNotChecked = (int[,])pointAndCoordinates.Clone();
+            for (int i = 0; i < pointAndCoordinatesMoveDownNotChecked.GetLength(0); i++)
+            {
+                pointAndCoordinatesMoveDownNotChecked[i, 0]++;
+            }
+            if (!IsCollisions(pointAndCoordinatesMoveDownNotChecked))
+            {
+                pointAndCoordinates = (int[,])pointAndCoordinatesMoveDownNotChecked.Clone();
+                return true;
+            } else
+            {
+                return false;
+            }
+        }
+        public bool IsCollisions(int[,] pointAndCoordinatesNotСhecked)
+        {
+            for (int i = 0; i < pointAndCoordinatesNotСhecked.GetLength(0); i++)
+            {
+                if (pointAndCoordinatesNotСhecked[i, 1] == GameField.field.GetLength(1) - 1 || pointAndCoordinatesNotСhecked[i, 1] == 0 || pointAndCoordinatesNotСhecked[i, 0] == GameField.field.GetLength(0) - 1)
+                {
+                    return true;
+                }
+                if (pointAndCoordinatesNotСhecked[i, 0] > 0)
+                {
+                    if (GameField.field[pointAndCoordinatesNotСhecked[i, 0], pointAndCoordinatesNotСhecked[i, 1]].Equals(GameField.figure))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
         public bool CheckLose()
         {
             for (int i = 0; i < pointAndCoordinates.GetLength(0); i++)
