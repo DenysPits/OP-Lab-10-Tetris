@@ -143,8 +143,10 @@ namespace OP_Lab_10
                     break;
             }
 
-            if (!IsCollisions(pointAndCoordinatesControlNotChecked))
+            if (!IsCollisions(pointAndCoordinatesControlNotChecked)) {
                 pointAndCoordinates = (int[,])pointAndCoordinatesControlNotChecked.Clone();
+                DrawOrClearFigure("draw");
+            }
         }
         public void FastMoveDown(int[,] pointAndCoordinatesControlNotChecked)
         {
